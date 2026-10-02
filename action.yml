@@ -1,0 +1,39 @@
+name: "AI Agent Repository Hardening Scan"
+description: "Static, evidence-only scan for common AI-agent, MCP, CI authority, and credential-pattern risks."
+author: "OssaBellator"
+branding:
+  icon: "shield"
+  color: "blue"
+outputs:
+  sarif-file:
+    description: "Path to the generated SARIF report."
+    value: ${{ steps.scan.outputs.sarif_file }}
+inputs:
+  path:
+    description: "Repository path to scan."
+    required: false
+    default: "."
+  fail-on:
+    description: "Fail the step at this finding threshold: never, high, medium, or any."
+    required: false
+    default: "never"
+runs:
+  using: "composite"
+  steps:
+    - name: Run static hardening scan
+      id: scan
+      shell: bash
+      env:
+        AI_AGENT_HARDENING_SCAN_PATH: ${{ inputs.path }}
+        AI_AGENT_HARDENING_FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        python "$GITHUB_ACTION_PATH/agent_hardening_check.py" "$AI_AGENT_HARDENING_SCAN_PATH" --format sarif --fail-on never > agent-hardening-scan.sarif
+        echo "sarif_file=agent-hardening-scan.sarif" >> "$GITHUB_OUTPUT"
+        set +e
+        python "$GITHUB_ACTION_PATH/agent_hardening_check.py" "$AI_AGENT_HARDENING_SCAN_PATH" --format markdown --fail-on "$AI_AGENT_HARDENING_FAIL_ON" | tee agent-hardening-scan.md
+        scan_status=${PIPESTATUS[0]}
+        set -e
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          cat agent-hardening-scan.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+        exit "$scan_status"
