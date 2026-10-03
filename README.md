@@ -1,5 +1,7 @@
 # AI Agent Repository Hardening Scan
 
+> **Compatibility repository:** this standalone Action remains public while existing integrations and the open awesome-actions submission reference it. New users should start with **[claude-code-mcp-hardening](https://github.com/OssaBellator/claude-code-mcp-hardening)**, which is the primary maintained project surface.
+
 A dependency-free GitHub Action for static, evidence-only review of AI-assisted repositories.
 
 It inventories common agent instruction files, MCP configuration, GitHub Actions workflows, and dependency manifests, and flags a small set of high-signal credential-pattern and authority risks. It does **not** execute target repository code, install target dependencies, read environment credentials, or print suspected secret values.
